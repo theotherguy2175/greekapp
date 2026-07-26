@@ -2,7 +2,8 @@ import path from 'node:path'
 import { config } from 'dotenv'
 import { defineConfig } from 'prisma/config'
 
-config({ path: path.resolve(__dirname, '.env.local') })
+config({ path: path.resolve(__dirname, '.env.local'), override: false })
+config({ path: path.resolve(__dirname, '.env'), override: false })
 
 export default defineConfig({
   schema: path.join(__dirname, 'prisma', 'schema.prisma'),

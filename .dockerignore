@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+.gitignore
+.env.local
+prisma/dev.db
+prisma/dev.db-journal
+*.md
+.claude
+.DS_Store
+playwright
+/tmp
