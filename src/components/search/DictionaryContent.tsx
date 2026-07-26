@@ -7,7 +7,7 @@ import { useFlashcards } from '@/hooks/useFlashcards'
 import { SearchBar } from '@/components/search/SearchBar'
 import { SearchResults } from '@/components/search/SearchResults'
 
-export default function DictionaryPage() {
+export default function DictionaryContent() {
   const { data: session } = useSession()
   const { query, setQuery, results, isLoading } = useSearch()
   const { checkBookmarks, isBookmarked, toggleBookmark } = useFlashcards()
