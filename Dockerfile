@@ -55,4 +55,4 @@ EXPOSE 3000
 ENTRYPOINT ["tini", "--"]
 CMD ["./docker-entrypoint.sh"]
 
-#docker pull git.casteel.pw/ccasteel/koine-search:latest
+#docker buildx build --platform linux/amd64 -t git.casteel.pw/ccasteel/koine-search:latest --push .

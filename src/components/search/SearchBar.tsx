@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { GreekKeyboardToggle, GreekKeyboard } from './GreekKeyboard'
 
 interface SearchBarProps {
@@ -13,24 +13,32 @@ export function SearchBar({ query, onChange, isLoading }: SearchBarProps) {
   const [showKeyboard, setShowKeyboard] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  useEffect(() => {
+    if (showKeyboard && inputRef.current) {
+      inputRef.current.blur()
+    }
+  }, [showKeyboard])
+
   const handleGreekInsert = useCallback((char: string) => {
     onChange(query + char)
-    inputRef.current?.focus()
   }, [query, onChange])
 
   const handleGreekBackspace = useCallback(() => {
     if (query.length > 0) {
       onChange(query.slice(0, -1))
     }
-    inputRef.current?.focus()
   }, [query, onChange])
 
   const handleCloseKeyboard = useCallback(() => {
     setShowKeyboard(false)
-    if (inputRef.current) {
-      inputRef.current.removeAttribute('inputmode')
-    }
   }, [])
+
+  const handleClear = useCallback(() => {
+    onChange('')
+    if (!showKeyboard) {
+      inputRef.current?.focus()
+    }
+  }, [onChange, showKeyboard])
 
   const isGreekInput = /[Ͱ-Ͽἀ-῿]/.test(query)
 
@@ -57,19 +65,38 @@ export function SearchBar({ query, onChange, isLoading }: SearchBarProps) {
           type="text"
           value={query}
           onChange={e => onChange(e.target.value)}
+          onFocus={() => {
+            if (showKeyboard) {
+              inputRef.current?.blur()
+            }
+          }}
           placeholder={showKeyboard
             ? "Tap Greek letters below..."
             : "Type transliteration (e.g., agape, logos, theos, hoti)..."
           }
-          className="w-full pl-12 pr-24 py-4 text-lg rounded-xl border border-stone-300 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-shadow placeholder:text-stone-400"
+          inputMode={showKeyboard ? 'none' : undefined}
+          readOnly={showKeyboard}
+          className="w-full pl-12 pr-28 py-4 text-lg rounded-xl border border-stone-300 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-shadow placeholder:text-stone-400"
           style={isGreekInput ? { fontFamily: "'Noto Serif', serif" } : undefined}
-          autoFocus
+          autoFocus={!showKeyboard}
           autoComplete="off"
           spellCheck={false}
         />
-        <div className="absolute inset-y-0 right-0 pr-3 flex items-center gap-2">
+        <div className="absolute inset-y-0 right-0 pr-3 flex items-center gap-1.5">
           {isLoading && (
             <div className="h-5 w-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+          )}
+          {query && !isLoading && (
+            <button
+              onClick={handleClear}
+              className="p-1.5 rounded-full hover:bg-stone-100 active:bg-stone-200 transition-colors"
+              title="Clear search"
+              type="button"
+            >
+              <svg className="h-5 w-5 text-stone-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
+              </svg>
+            </button>
           )}
           <div data-greek-toggle>
             <GreekKeyboardToggle

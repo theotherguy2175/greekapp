@@ -6,7 +6,7 @@ export interface LexiconEntry {
   pronunciation: string
   shortDef: string
   fullDef: string
-  kjvDef: string
+  strongsDef: string
   derivation: string
 }
 

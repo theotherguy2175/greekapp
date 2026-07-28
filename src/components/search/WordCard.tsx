@@ -11,106 +11,6 @@ interface WordCardProps {
   onToggleBookmark: () => void
 }
 
-const CURATED_GLOSSES: Record<string, string> = {
-  G3056: 'word, speech, reason',
-  G2316: 'God',
-  G2962: 'Lord, master',
-  G5547: 'Christ, anointed one',
-  G2424: 'Jesus',
-  G4151: 'spirit, breath, wind',
-  G4102: 'faith, belief, trust',
-  G26: 'love',
-  G266: 'sin',
-  G444: 'man, human being',
-  G2889: 'world',
-  G3772: 'heaven',
-  G932: 'kingdom',
-  G2222: 'life',
-  G2288: 'death',
-  G1411: 'power, miracle',
-  G1680: 'hope',
-  G5485: 'grace, favor',
-  G1343: 'righteousness',
-  G225: 'truth',
-  G1515: 'peace',
-  G5457: 'light',
-  G4561: 'flesh, body',
-  G129: 'blood',
-  G4396: 'prophet',
-  G652: 'apostle, messenger',
-  G3101: 'disciple, student',
-  G1577: 'church, assembly',
-  G3551: 'law',
-  G1242: 'covenant, testament',
-  G2041: 'work, deed',
-  G4100: 'believe, trust, have faith',
-  G25: 'love',
-  G1097: 'know, understand',
-  G2980: 'speak, say',
-  G3004: 'say, tell',
-  G1492: 'see, know, perceive',
-  G2064: 'come, go',
-  G1325: 'give',
-  G2983: 'receive, take',
-  G4160: 'do, make',
-  G1166: 'show',
-  G3962: 'father',
-  G5207: 'son',
-  G40: 'holy, sacred',
-  G18: 'good',
-  G2570: 'good, beautiful',
-  G2556: 'bad, evil',
-  G4190: 'evil, wicked',
-  G3173: 'great, large',
-  G3398: 'small, little',
-  G4413: 'first',
-  G2078: 'last',
-  G3568: 'now',
-  G3754: 'that, because',
-  G2532: 'and, also, even',
-  G3588: 'the',
-  G1063: 'for, because',
-  G235: 'but, rather',
-  G3756: 'not, no',
-  G1161: 'but, and, now',
-  G2443: 'in order that, so that',
-  G3739: 'who, which, that',
-  G846: 'he, she, it, self',
-  G3778: 'this, these',
-  G1565: 'that, those',
-  G3956: 'all, every, whole',
-  G1520: 'one',
-  G1722: 'in, on, among',
-  G1537: 'out of, from',
-  G1519: 'into, to, for',
-  G4314: 'to, toward, with',
-  G575: 'from, away from',
-  G1909: 'on, upon, over',
-  G3326: 'with, after',
-  G1223: 'through, by means of',
-  G2596: 'down, according to',
-  G4012: 'about, concerning',
-  G5228: 'above, for, on behalf of',
-}
-
-function getSimpleGloss(entry: LexiconEntry): string {
-  if (CURATED_GLOSSES[entry.strongsId]) {
-    return CURATED_GLOSSES[entry.strongsId]
-  }
-  const raw = entry.kjvDef || entry.shortDef
-  const cleaned = raw
-    .replace(/\([^)]*\)/g, '')
-    .replace(/\+\s*/g, '')
-    .replace(/X\s+/g, '')
-    .replace(/-\w+/g, '')
-    .split(',')
-    .map(s => s.trim())
-    .filter(s => s.length > 1 && s.length < 25 && !/^[^a-zA-Z]*$/.test(s))
-    .slice(0, 3)
-    .join(', ')
-  return cleaned || entry.shortDef.split(';')[0].split(',')[0].trim()
-}
-
 export function WordCard({ entry, matchType, isBookmarked, onToggleBookmark }: WordCardProps) {
   const { data: session } = useSession()
   const [expanded, setExpanded] = useState(false)
@@ -124,8 +24,6 @@ export function WordCard({ entry, matchType, isBookmarked, onToggleBookmark }: W
       setBookmarking(false)
     }
   }
-
-  const simpleGloss = getSimpleGloss(entry)
 
   return (
     <div className="bg-white rounded-xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow p-5">
@@ -144,7 +42,7 @@ export function WordCard({ entry, matchType, isBookmarked, onToggleBookmark }: W
           </div>
 
           <p className="mt-1 text-xl text-amber-800 font-semibold">
-            {simpleGloss}
+            {entry.shortDef}
           </p>
 
           {/* Divider */}
@@ -168,18 +66,14 @@ export function WordCard({ entry, matchType, isBookmarked, onToggleBookmark }: W
               </a>
             </div>
 
-            {/* Definition */}
-            <p className="mt-1.5 text-sm text-stone-600">
-              {entry.shortDef}
-            </p>
-
-            {entry.kjvDef && (
-              <p className="mt-1 text-sm text-stone-400">
-                <span className="font-medium">Translated as:</span> {entry.kjvDef}
+            {/* Full Dodson definition */}
+            {entry.fullDef !== entry.shortDef && (
+              <p className="mt-1.5 text-sm text-stone-600">
+                {entry.fullDef}
               </p>
             )}
 
-            {(entry.fullDef !== entry.shortDef || entry.derivation) && (
+            {(entry.strongsDef || entry.derivation) && (
               <button
                 onClick={() => setExpanded(!expanded)}
                 className="mt-2 text-sm text-amber-700 hover:text-amber-800 font-medium transition-colors"
@@ -190,10 +84,10 @@ export function WordCard({ entry, matchType, isBookmarked, onToggleBookmark }: W
 
             {expanded && (
               <div className="mt-3 space-y-2 text-sm text-stone-600">
-                {entry.fullDef !== entry.shortDef && (
+                {entry.strongsDef && (
                   <p>
-                    <span className="font-medium text-stone-700">Full definition:</span>{' '}
-                    {entry.fullDef}
+                    <span className="font-medium text-stone-700">Strong&apos;s:</span>{' '}
+                    {entry.strongsDef}
                   </p>
                 )}
                 {entry.derivation && (

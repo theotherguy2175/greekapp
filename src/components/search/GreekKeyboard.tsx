@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 
 interface GreekKeyboardProps {
   onInsert: (char: string) => void
@@ -52,10 +52,15 @@ const LABELS: Record<string, string> = {
   'ς': 'final sigma',
 }
 
+function preventFocus(e: React.MouseEvent | React.TouchEvent) {
+  e.preventDefault()
+}
+
 export function GreekKeyboardToggle({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => void }) {
   return (
     <button
       onClick={onToggle}
+      onMouseDown={preventFocus}
       className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
         isOpen
           ? 'bg-amber-700 text-white'
@@ -72,41 +77,26 @@ export function GreekKeyboardToggle({ isOpen, onToggle }: { isOpen: boolean; onT
 export function GreekKeyboard({ onInsert, onBackspace, isOpen, onClose }: GreekKeyboardProps) {
   const keyboardRef = useRef<HTMLDivElement>(null)
 
+  const handleClickOutside = useCallback((e: MouseEvent | TouchEvent) => {
+    const target = e.target as HTMLElement
+    if (
+      keyboardRef.current &&
+      !keyboardRef.current.contains(target) &&
+      !target.closest('[data-greek-toggle]')
+    ) {
+      onClose()
+    }
+  }, [onClose])
+
   useEffect(() => {
     if (!isOpen) return
-
-    function handleClickOutside(e: MouseEvent | TouchEvent) {
-      const target = e.target as HTMLElement
-      if (
-        keyboardRef.current &&
-        !keyboardRef.current.contains(target) &&
-        !target.closest('[data-greek-toggle]')
-      ) {
-        onClose()
-      }
-    }
-
     document.addEventListener('mousedown', handleClickOutside)
     document.addEventListener('touchstart', handleClickOutside)
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
       document.removeEventListener('touchstart', handleClickOutside)
     }
-  }, [isOpen, onClose])
-
-  useEffect(() => {
-    if (isOpen) {
-      const activeEl = document.activeElement as HTMLElement
-      if (activeEl?.tagName === 'INPUT') {
-        activeEl.setAttribute('inputmode', 'none')
-      }
-    } else {
-      const input = document.querySelector('input[inputmode="none"]') as HTMLElement
-      if (input) {
-        input.removeAttribute('inputmode')
-      }
-    }
-  }, [isOpen])
+  }, [isOpen, handleClickOutside])
 
   if (!isOpen) return null
 
@@ -114,6 +104,8 @@ export function GreekKeyboard({ onInsert, onBackspace, isOpen, onClose }: GreekK
     <div
       ref={keyboardRef}
       className="fixed bottom-0 left-0 right-0 z-50 bg-stone-100 border-t border-stone-300 shadow-[0_-4px_12px_rgba(0,0,0,0.1)] pb-[env(safe-area-inset-bottom)]"
+      onMouseDown={preventFocus}
+      onTouchStart={preventFocus}
     >
       <div className="max-w-lg mx-auto px-2 pt-2 pb-2">
         <div className="flex items-center justify-between mb-1.5 px-1">
@@ -139,10 +131,11 @@ export function GreekKeyboard({ onInsert, onBackspace, isOpen, onClose }: GreekK
                 <button
                   key={key.greek + ri}
                   onClick={() => onInsert(key.greek)}
-                  className="flex-1 max-w-[42px] h-11 rounded-lg bg-white border border-stone-200 shadow-sm hover:bg-amber-50 active:bg-amber-100 active:scale-95 transition-all text-lg"
+                  className="flex-1 max-w-[42px] h-11 rounded-lg bg-white border border-stone-200 shadow-sm hover:bg-amber-50 active:bg-amber-100 active:scale-95 transition-all text-lg select-none"
                   style={{ fontFamily: "'Noto Serif', serif" }}
                   title={LABELS[key.greek] || key.greek}
                   type="button"
+                  tabIndex={-1}
                 >
                   {key.label}
                 </button>
@@ -154,15 +147,17 @@ export function GreekKeyboard({ onInsert, onBackspace, isOpen, onClose }: GreekK
         <div className="flex justify-center gap-[3px] mt-1">
           <button
             onClick={() => onInsert(' ')}
-            className="h-11 flex-[3] rounded-lg bg-white border border-stone-200 shadow-sm hover:bg-stone-50 active:bg-stone-100 active:scale-[0.98] transition-all text-xs text-stone-500"
+            className="h-11 flex-[3] rounded-lg bg-white border border-stone-200 shadow-sm hover:bg-stone-50 active:bg-stone-100 active:scale-[0.98] transition-all text-xs text-stone-500 select-none"
             type="button"
+            tabIndex={-1}
           >
             space
           </button>
           <button
             onClick={onBackspace}
-            className="h-11 flex-[1.5] rounded-lg bg-white border border-stone-200 shadow-sm hover:bg-red-50 active:bg-red-100 active:scale-95 transition-all text-sm text-stone-500"
+            className="h-11 flex-[1.5] rounded-lg bg-white border border-stone-200 shadow-sm hover:bg-red-50 active:bg-red-100 active:scale-95 transition-all text-sm text-stone-500 select-none"
             type="button"
+            tabIndex={-1}
           >
             ⌫
           </button>
