@@ -1,7 +1,7 @@
 # Koine Greek Search and Learn
 
 <div align="center">
-  <img src="DEMO.png" alt="Dashboard UI" width="50%" style="margin: 20px auto;"/>
+  <img src="DEMO.png" alt="Dashboard UI" width="95%" style="margin: 20px auto;"/>
 </div>
 
 
